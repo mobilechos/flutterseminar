@@ -1,61 +1,62 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterseminar/bloc/auth_bloc.dart';
-import 'package:flutterseminar/model/auth_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 
-import 'history_list.dart';
-import 'signin.dart';
+import 'receive_page.dart';
+import 'send_page.dart';
 
-class Home extends StatelessWidget{
+class Home extends StatefulWidget {
   final String title;
+
   const Home({Key? key, required this.title}) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => HomeState();
+}
+
+class HomeState extends State<Home>{
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index){
+      setState(() {
+          _selectedIndex = index;
+      });
+  }
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    ReceivingPage(),
+    SendingPage()
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final _authRepository = RepositoryProvider.of<AuthRepository>(context);
-    return CupertinoTabScaffold(
-        tabBar: CupertinoTabBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.share_up),
-              label: 'Send',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.square_arrow_down),
-              label: 'Download',
-            ),
-          ],
-        ),
-        tabBuilder: (BuildContext context, int index) {
-          if (index == 0) {
-            return CupertinoPageScaffold(
-                navigationBar: CupertinoNavigationBar(
-                  middle: Text(title),
-                  trailing: BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        if (state is AuthStateUnAuthenticated)
-                          return Icon(CupertinoIcons.person_alt_circle);
-                        else if (state is AuthStateAuthenticated)
-                          return Text(_authRepository.email);
-                        else
-                          return Container();
-                      }
-                  )
-                ),
-                child: BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      if (state is AuthStateUnAuthenticated)
-                        return SignIn();
-                      else if (state is AuthStateAuthenticated)
-                        return HistoryList();
-                      else
-                        return Container();
-                    }
-                )
-            );
-          }
-          else{
-            return Center(child:Text('Download Page'));
-          }
-        });}
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title,
+                 style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          Center(child:Text('Login'.tr)),
+          PopupMenuButton(
+            padding: EdgeInsets.fromLTRB(20, 0, 30, 0),
+            icon: Icon(Icons.more_vert),
+            itemBuilder: (context) =>[])
+        ],
+      ),
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex)
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.file_download),
+            label: 'Receive'.tr,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.file_upload),
+            label: 'Send'.tr,
+          ),
+        ],
+        onTap: _onItemTapped,
+        currentIndex: _selectedIndex ,
+      ),
+    );
+  }
 }
